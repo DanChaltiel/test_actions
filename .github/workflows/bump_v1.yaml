@@ -4,7 +4,10 @@ on:
     branches:
       - main
 
-name: "Bump dev version"
+name: "Bump v1"
+
+permissions:
+  contents: write
 
 jobs:
   update_version:
