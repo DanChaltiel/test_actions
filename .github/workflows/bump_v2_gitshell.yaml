@@ -1,8 +1,5 @@
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 name: "Bump v1"
 
@@ -49,10 +46,10 @@ jobs:
       # if: inputs.create-tag != 'false'
       run: |
         git add DESCRIPTION
-        git commit -m "Update dev version (Github Actions)" -m "[skip ci]"
+        git commit -m "Update dev version (Github Actions)" -m "Bump to v${{ env.PKG_NEW_VERSION }}
+        [skip ci]"
         git tag v${{ env.PKG_NEW_VERSION }}
-        git push
-        git push --tags
+        git push origin main --tags
 
 
     # - name: Commit the version change
