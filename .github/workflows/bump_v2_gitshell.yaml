@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
 
-name: "Bump v1"
+name: "2 - Bump via Git Shell (manual)"
 
 jobs:
   update_version:
