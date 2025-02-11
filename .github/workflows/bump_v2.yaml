@@ -1,20 +1,21 @@
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
-name: "Bump v2"
+name: "Manual Bump"
+
 
 jobs:
   update_version:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
     steps:
-    - name: echo secret
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-      run: |
-        echo -n "${{ secrets.DEPLOY_KEY }}" >> foo && cut -c1-3 foo && cut -c4- foo
+    - name: Check out repository
+      uses: actions/checkout@v4
+      with:
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+    - name: Bump dev version
+      uses: DanChaltiel/actions/bump-dev-version@v2
+      with:
+        create-tag: 'true'
