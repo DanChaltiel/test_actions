@@ -51,7 +51,6 @@ jobs:
         git add DESCRIPTION
         git commit -m "Update dev version (Github Actions)" -m "[skip ci]"
         git tag v${{ env.PKG_NEW_VERSION }}
-        git push
         git push --tags
 
 
