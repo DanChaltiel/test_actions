@@ -49,8 +49,8 @@ jobs:
       # if: inputs.create-tag != 'false'
       run: |
         git add DESCRIPTION
-        git tag -a v${{ env.PKG_NEW_VERSION }}
         git commit -m "Update dev version (Github Actions)" -m "[skip ci]"
+        git tag v${{ env.PKG_NEW_VERSION }}
         git push
 
     # - name: Commit the version change
