@@ -1,10 +1,7 @@
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
-name: "1 - Bump via DanChaltiel/actions (on push)"
+name: "9 - Bump via DanChaltiel/actions (manual)"
 
 
 jobs:
