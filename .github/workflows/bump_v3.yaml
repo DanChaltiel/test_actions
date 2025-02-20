@@ -1,0 +1,86 @@
+on:
+  workflow_dispatch:
+  push:
+  branches:
+  - main
+
+name: "1 - Test (on push)"
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+      with:
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+    - name: Set up R
+      uses: r-lib/actions/setup-r@v2
+
+    - name: Install packages
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        packages: |
+          any::desc
+
+    - name: Configure git
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+    - name: Increment dev version
+      id: vars
+      shell: Rscript {0}
+      run: |
+        invisible(desc::desc_bump_version("dev"))
+        new_version = desc::desc_get_version()
+        cat(sprintf("PKG_NEW_VERSION=%s\n", new_version),
+            file = Sys.getenv("GITHUB_ENV"), append = TRUE)
+        message("Setting PKG_NEW_VERSION to ", new_version)
+
+
+    - name: Update Readme version
+      # if: inputs.create-tag != 'false'
+      shell: Rscript {0}
+      env:
+        MY_INPUT: ${{ inputs.my_input }}
+      run: |
+        REPO = Sys.getenv("GITHUB_REPOSITORY")
+        PKG_NEW_VERSION = Sys.getenv("PKG_NEW_VERSION")
+
+        message("Setting PKG_NEW_VERSION to ", PKG_NEW_VERSION, "in repo ", REPO)
+
+        x = readLines("README.md")
+        pattern = paste0('"', REPO, '.*"')
+        replacement = paste0('"', REPO, '@v', PKG_NEW_VERSION, '"')
+        new = gsub(pattern, replacement, x)
+
+        file_bytes = readBin("README.md", "raw", file.info("README.md")$size)
+        eol = if(any(file_bytes == as.raw(13))) "\r\n" else  "\n"
+
+        f = file("README.md", open="wb")
+        writeLines(new, f, sep=eol, useBytes=TRUE)
+        close(f)
+
+
+    - name: Commit the version change and add tag
+      # if: inputs.create-tag != 'false'
+      run: |
+        git add DESCRIPTION
+        git add README.md
+        git commit -m "Update dev version (Github Actions)" -m "Bump to v${{ env.PKG_NEW_VERSION }}
+        [skip ci]"
+        git tag v${{ env.PKG_NEW_VERSION }}
+        git push origin main --tags
+
+
+    # - name: Commit the version change
+    #   if: inputs.create-tag == 'false'
+    #   run: |
+    #     git add DESCRIPTION
+    #     git commit -m "Update dev version to v${{ env.PKG_NEW_VERSION }} (Github Actions)" -m "[skip ci]"
+    #     git push
+
